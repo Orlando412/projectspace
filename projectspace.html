@@ -1,0 +1,529 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Document</title>
+</head>
+<body>
+  
+  <button id="pauseButton">Pause</button>
+  <button id="startButton">Start</button>
+
+
+<script type="module">
+  import * as THREE from "../mods/three.module.js";
+  import { OrbitControls } from "../mods/OrbitControls.js";
+
+  const scene = new THREE.Scene();
+
+  const camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 4000);
+  camera.position.set(0,0,800);
+
+  const renderer = new THREE.WebGLRenderer({ antialias: true });
+  renderer.setSize(window.innerWidth, window.innerHeight);
+  renderer.setPixelRatio(window.devicePixelRatio);
+  document.body.appendChild(renderer.domElement);
+
+  const ambient = new THREE.AmbientLight(0xffffff);
+  scene.add(ambient);
+  const plights = new THREE.PointLight(0xffffff);
+  scene.add(plights);
+
+  //pause and start button
+  let isPaused = false;
+  const pauseButton = document.getElementById("pauseButton");
+  const startButton = document.getElementById("startButton");
+  pauseButton.addEventListener("click", () => {
+    isPaused = true;
+  });
+  startButton.addEventListener("click", () => {
+    isPaused = false;
+    animate();
+  });
+
+  //lets build this solar system
+
+  //background
+  const loader =  new THREE.TextureLoader();
+  const backgroundGeometry = new THREE.SphereGeometry(2000, 100, 100);
+  const backgroundMaterial = new THREE.MeshStandardMaterial({
+    map: loader.load("../image/background.jpg"),
+    side: THREE.DoubleSide,
+  });
+  const background = new THREE.Mesh(backgroundGeometry, backgroundMaterial);
+  scene.add(background);
+  
+  //the sun
+  const sunGeometry = new THREE.SphereGeometry(109, 400, 200);
+  const sunMaterial = new THREE.MeshStandardMaterial({
+   emissive: 0xffd700,
+   emissiveMap: loader.load("../image/sun/sunmap.jpg"),
+   emissiveIntensity: 1
+  });
+  
+  const sunMesh = new THREE.Mesh(sunGeometry, sunMaterial);
+  scene.add(sunMesh);
+
+  
+  const earth = new THREE.Group();
+  const r = 25;
+  const s = 50;
+  const tilt = 0.41; // Change to 0 (for testing)
+
+const earthMap = loader.load("../image/earth/earthmap1k.jpg");
+const earthBump = loader.load("../image/earth/earthbump1k.jpg");
+const earthSpec = loader.load("../image/earth/earthspec1k.jpg");
+
+const earthGeometry = new THREE.SphereGeometry(r, s, s);
+const earthMaterial = new THREE.MeshPhongMaterial({
+  map: earthMap,
+  bumpMap: earthBump,
+  bumpScale: 0.5,
+  specularMap: earthSpec,
+  shininess: 0.5,
+});
+
+const earthMesh = new THREE.Mesh(earthGeometry, earthMaterial);
+earthMesh.position.set(270, 0, 0);
+earthMesh.rotation.z = tilt;
+earth.add(earthMesh);
+
+
+const cloudGeometry = new THREE.SphereGeometry(r + 1, s, s);
+const cloudMaterial = new THREE.MeshPhongMaterial({
+  map: loader.load("../image/earth/earthcloudmaptrans.jpg"),
+  transparent: true,
+  opacity: 0.6,
+});
+const clouds = new THREE.Mesh(cloudGeometry, cloudMaterial);
+clouds.rotation.z = tilt;
+earth.add(clouds);
+
+const axisPoints = [new THREE.Vector3(0, 35, 0), new THREE.Vector3(0, -35, 0),];
+const axisGeometry = new THREE.BufferGeometry().setFromPoints(axisPoints);
+const axis = new THREE.Line(axisGeometry, new THREE.LineBasicMaterial({ 
+  color: 0x330000,
+  transparent: true,
+  opacity: 0.3, 
+}));
+axis.rotation.z = tilt;
+earth.add(axis);
+
+
+//earths orbit
+function animateTheEarthOrbit() {
+  const speed = 0.005;
+  earth.rotation.y += speed;
+}
+
+
+//moon
+const moonGeometry = new THREE.SphereGeometry(5, 40, 20);
+const moonMaterial = new THREE.MeshStandardMaterial({
+  map: loader.load("../image/moon/moonmapthumb.jpg"),
+  bumpMap: loader.load("../image/moon/moonbump1k.jpg"),
+  bumpScale: 0.8,
+});
+const moonMesh = new THREE.Mesh(moonGeometry, moonMaterial);
+moonMesh.position.set(250, 0, 0);
+earth.add(moonMesh);
+
+//moons orbit
+function animateTheMoonOrbit() {
+  const speed = 0.01;
+  const distanceFromEarth = 40;
+
+  moonMesh.rotation.y += speed;
+  const moonOrbitX = Math.cos(moonMesh.rotation.y) * distanceFromEarth;
+  const moonOrbitZ = Math.sin(moonMesh.rotation.y) * distanceFromEarth;
+
+  moonMesh.position.x = earthMesh.position.x + moonOrbitX;
+  moonMesh.position.z = earthMesh.position.z + moonOrbitZ;
+  
+}
+scene.add(earth);
+selectPlanet(earthMesh);
+
+//mercury
+const mercury = new THREE.Group();
+const mRadius = 0.383 * 25;
+const mDistance = 130;
+
+const mMap = loader.load("../image/mercury/mercurymap.jpg");
+const mBump = loader.load("../image/mercury/mercurybump.jpg");
+const mercuryGeometry = new THREE.SphereGeometry(mRadius, 40, 20);
+const mercuryMaterial = new THREE.MeshPhongMaterial({
+  map: mMap,
+  bumpMap: mBump,
+  bumpScale: 0.8,
+});
+
+const mercuryMesh = new THREE.Mesh(mercuryGeometry, mercuryMaterial);
+mercuryMesh.position.set(mDistance, 0, 0);
+mercury.add(mercuryMesh);
+
+//mercurys orbit
+function animateTheMercuryOrbit() {
+  const speed = 0.01;
+  const distanceFromSun = 130;
+  
+  mercury.rotation.y += speed;
+  const mercuryOrbitX = Math.cos(mercuryMesh.rotation.y) * distanceFromSun;
+  const mercuryOrbitZ = Math.sin(mercuryMesh.rotation.y) * distanceFromSun;
+  
+  mercuryMesh.position.x =  mercuryOrbitX;
+  mercuryMesh.position.z =  mercuryOrbitZ;
+
+}
+scene.add(mercury);
+selectPlanet(mercuryMesh);
+
+//venus 
+const venus = new THREE.Group();
+const vRadius = 0.949 * 25;
+const vDistance = 190;
+
+const vMap = loader.load("../image/venus/venusmap.jpg");
+const vBump = loader.load("../image/venus/venusbump.jpg");
+const venusGeometry = new THREE.SphereGeometry(vRadius, 40, 20);
+const venusMaterial = new THREE.MeshPhongMaterial({
+  map: vMap,
+  bumpMap: vBump,
+  bumpScale: 0.8,
+});
+
+const venusMesh = new THREE.Mesh(venusGeometry, venusMaterial);
+venusMesh.position.set(vDistance, 0, 0);
+venus.add(venusMesh);
+
+//venus orbit
+function animateTheVenusOrbit() {
+  const speed = 0.007;
+  const distanceFromSun = 190;
+  
+  venus.rotation.y += speed;
+  const venusOrbitX = Math.cos(venusMesh.rotation.y) * distanceFromSun;
+  const venusOrbitZ = Math.sin(venusMesh.rotation.y) * distanceFromSun;
+  
+  venusMesh.position.x =  venusOrbitX;
+  venusMesh.position.z =  venusOrbitZ;
+
+}
+scene.add(venus);
+selectPlanet(venusMesh);
+
+
+//mars
+const mars = new THREE.Group();
+const marsRadius = 0.532 * 25;
+const marsDistance = 370;
+
+const marsMap = loader.load("../image/mars/marsmap1k.jpg");
+const marsBump = loader.load("../image/mars/marsbump1k.jpg");
+const marsGeometry = new THREE.SphereGeometry(marsRadius, 40, 20);
+const marsMaterial = new THREE.MeshPhongMaterial({
+  map: marsMap,
+  bumpMap: marsBump,
+  bumpScale: 0.8,
+});
+
+const marsMesh = new THREE.Mesh(marsGeometry, marsMaterial);
+marsMesh.position.set(marsDistance, 0, 0);
+mars.add(marsMesh);
+
+function animateMarsOrbit() {
+  const speed = 0.0025;
+  const distanceFromSun = 370;
+  
+  mars.rotation.y += speed;
+  const marsOrbitX = Math.cos(marsMesh.rotation.y) * distanceFromSun;
+  const marsOrbitZ = Math.sin(marsMesh.rotation.y) * distanceFromSun;
+  
+  marsMesh.position.x =  marsOrbitX;
+  marsMesh.position.z =  marsOrbitZ;
+
+}
+scene.add(mars);
+selectPlanet(marsMesh);
+
+
+
+//jupiter
+const jupiter = new THREE.Group();
+const jRadius = 3.78 * 25;
+const jDistance = 510;
+
+const jMap = loader.load("../image/jupiter/jupitermap.jpg");
+const jGeometry = new THREE.SphereGeometry(jRadius, 40, 20);
+const jMaterial = new THREE.MeshStandardMaterial({
+  map: jMap,
+});
+
+const jMesh = new THREE.Mesh(jGeometry, jMaterial);
+jMesh.position.set(jDistance, 0, 0);
+jupiter.add(jMesh);
+
+function animateJupiterOrbit() {
+  const speed = 0.0008;
+  const distanceFromSun = 510;
+  
+  jupiter.rotation.y += speed;
+  const jupiterOrbitX = Math.cos(jMesh.rotation.y) * distanceFromSun;
+  const jupiterOrbitZ = Math.sin(jMesh.rotation.y) * distanceFromSun;
+  
+  jMesh.position.x =  jupiterOrbitX;
+  jMesh.position.z =  jupiterOrbitZ;
+
+}
+scene.add(jupiter);
+selectPlanet(jMesh);
+
+
+//saturn
+const saturn = new THREE.Group();
+const sRadius = 3.26 * 25;
+const sDistance = 750;
+const sTilt = 0.466;
+
+const sMap = loader.load("../image/saturn/saturnmap.jpg");
+const sGeometry = new THREE.SphereGeometry(sRadius, 40, 20);
+const sMaterial = new THREE.MeshStandardMaterial({
+  map: sMap,
+  
+  
+});
+const sMesh = new THREE.Mesh(sGeometry, sMaterial);
+sMesh.position.set(sDistance, 0, 0);
+sMesh.rotation.z = sTilt;
+
+//saturns rings
+const sRingColor = loader.load("../image/saturn/saturnringcolor.jpg");
+const sRingPattern = loader.load("../image/saturn/saturnringpattern.gif");
+const sRingGeometry = new THREE.RingGeometry(3.5 * 25, 5 * 25, 40, 20);
+const sRingMaterial = new THREE.MeshStandardMaterial({
+  map: sRingColor,
+  side: THREE.DoubleSide,
+  alphaMap: sRingPattern,
+  transparent: true,
+  opacity: 1,
+});
+const sRingMesh = new THREE.Mesh(sRingGeometry, sRingMaterial);
+sRingMesh.rotation.x = Math.PI / 2;
+sMesh.add(sRingMesh);
+saturn.add(sMesh);
+
+//saturn orbit
+function animateTheSaturnOrbit() {
+  const speed = 0.0006;
+  const distanceFromSun = 750;
+  
+  saturn.rotation.y += speed;
+  const saturnOrbitX = Math.cos(sMesh.rotation.y) * distanceFromSun;
+  const saturnOrbitZ = Math.sin(sMesh.rotation.y) * distanceFromSun;
+  
+  sMesh.position.x =  saturnOrbitX;
+  sMesh.position.z =  saturnOrbitZ;
+
+}
+scene.add(saturn);
+selectPlanet(sMesh);
+
+//uranus
+const uranus = new THREE.Group();
+const uRadius = 1.51 * 25;
+const uDistance = 900;
+const uTilt = 1.71;
+
+const uMap = loader.load("../image/uranus/uranusmap.jpg");
+const uGeometry = new THREE.SphereGeometry(uRadius, 40, 20);
+const uMaterial = new THREE.MeshStandardMaterial({
+  map: uMap,
+});
+const uMesh = new THREE.Mesh(uGeometry, uMaterial);
+uMesh.position.set(uDistance, 0, 0);
+uMesh.rotation.z = uTilt;
+
+//uranus rings
+const uRingColor = loader.load("../image/uranus/uranusringcolour.jpg");
+const uRingPattern = loader.load("../image/uranus/uranusringtrans.gif");
+const uRingGeometry = new THREE.RingGeometry(1.7 * 25, 2.5 * 25, 40, 20);
+const uRingMaterial = new THREE.MeshStandardMaterial({
+  map: uRingColor,
+  side: THREE.DoubleSide,
+  alphaMap: uRingPattern,
+  transparent: true,
+  opacity: 1,
+});
+const uRingMesh = new THREE.Mesh(uRingGeometry, uRingMaterial);
+uRingMesh.rotation.x = Math.PI / 2;
+uMesh.add(uRingMesh);
+uranus.add(uMesh);
+
+//uranus orbit
+function animateTheUranusOrbit() {
+  const speed = 0.0004;
+  const distanceFromSun = 900;
+  
+  uranus.rotation.y += speed;
+  const uranusOrbitX = Math.cos(uMesh.rotation.y) * distanceFromSun;
+  const uranusOrbitZ = Math.sin(uMesh.rotation.y) * distanceFromSun;
+  
+  uMesh.position.x =  uranusOrbitX;
+  uMesh.position.z =  uranusOrbitZ;
+
+}
+scene.add(uranus);
+selectPlanet(uMesh);
+
+//neptune
+const neptune = new THREE.Group();
+const nRadius = 1.51 * 25;
+const nDistance = 1050;
+const nTilt = 0.671;
+
+const nMap = loader.load("../image/neptune/neptunemap.jpg");
+const nGeometry = new THREE.SphereGeometry(nRadius, 40, 20);
+const nMaterial = new THREE.MeshStandardMaterial({
+  map: nMap,
+});
+const nMesh = new THREE.Mesh(nGeometry, nMaterial);
+nMesh.position.set(nDistance, 0, 0);
+nMesh.rotation.z = nTilt;
+neptune.add(nMesh);
+
+//neptune orbit
+function animateTheNeptuneOrbit() {
+  const speed = 0.0003;
+  const distanceFromSun = 1050;
+  
+  neptune.rotation.y += speed;
+  const neptuneOrbitX = Math.cos(nMesh.rotation.y) * distanceFromSun;
+  const neptuneOrbitZ = Math.sin(nMesh.rotation.y) * distanceFromSun;
+  
+  nMesh.position.x =  neptuneOrbitX;
+  nMesh.position.z =  neptuneOrbitZ;
+
+}
+scene.add(neptune);
+selectPlanet(nMesh);
+
+//pluto
+const pluto = new THREE.Group();
+const pRadius = 0.186 * 25;
+const pDistance = 1170;
+
+const pMap = loader.load("../image/pluto/plutomap1k.jpg");
+const pGeometry = new THREE.SphereGeometry(pRadius, 40, 20);
+const pMaterials = new THREE.MeshStandardMaterial({
+  map: pMap,
+});
+const pMesh = new THREE.Mesh(pGeometry, pMaterials);
+pMesh.position.set(pDistance, 0, 0);
+pluto.add(pMesh);
+
+//pluto orbit
+function animateThePlutoOrbit() {
+  const speed = 0.0002;
+  const distanceFromSun = 1170;
+  
+  pluto.rotation.y += speed;
+  const plutoOrbitX = Math.cos(pMesh.rotation.y) * distanceFromSun;
+  const plutoOrbitZ = Math.sin(pMesh.rotation.y) * distanceFromSun;
+  
+  pMesh.position.x =  plutoOrbitX;
+  pMesh.position.z =  plutoOrbitZ;
+
+}
+scene.add(pluto);
+selectPlanet(pMesh);
+
+
+
+
+
+
+//creates shadowmaps for planets
+renderer.shadowMap.enabled = true;
+plights.castShadow = true;
+
+plights.shadow.mapSize.width = 500;
+plights.shadow.mapSize.height = 500;
+plights.shadow.camera.near = 120;
+plights.shadow.camera.far = 300;
+
+earthMesh.castShadow = true;
+earthMesh.receiveShadow = true;
+clouds.receiveShadow = true;
+venusMesh.castShadow = true;
+venusMesh.receiveShadow = true;
+
+
+  function zoomInOnPlanet(planetMesh) {
+    const initialPosition = camera.position.clone();
+    const zoomPosition = planetMesh.position.clone();
+    const zoom = 0.9;
+
+    const zoomAnimation = () => {
+      const newPosition = initialPosition.clone().lerp(zoomPosition, zoom);
+      const distance = initialPosition.distanceTo(zoomPosition);
+
+      if (distance > 1) {
+          camera.position.copy(newPosition);
+          camera.lookAt(planetMesh.position);
+          requestAnimationFrame(zoomAnimation);
+      }
+    };
+      zoomAnimation();
+  }
+
+  function selectPlanet(planetMesh) {
+    planetMesh.addEventListener("click", () => {
+      zoomInOnPlanet(planetMesh);
+    });
+    
+  }
+
+
+
+
+
+  //orbit controls for interactive navigation
+  const controls = new OrbitControls(camera, renderer.domElement);
+  
+  //display
+  function animate() {
+    requestAnimationFrame(animate);
+
+    if(!isPaused) {
+      
+      animateTheEarthOrbit();
+      animateTheMoonOrbit();
+      animateTheMercuryOrbit();
+      animateTheVenusOrbit();
+      animateMarsOrbit();
+      animateJupiterOrbit();
+      animateTheSaturnOrbit();  
+      animateTheUranusOrbit();
+      animateTheNeptuneOrbit();
+      animateThePlutoOrbit();
+
+    }
+    renderer.render(scene, camera);
+  }
+  
+  animate();
+  
+  
+</script>
+</body>
+</html>
+
+
+
+
+
+
+
+  
