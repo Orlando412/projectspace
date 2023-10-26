@@ -15,6 +15,10 @@
 <script type="module">
   import * as THREE from "../mods/three.module.js";
   import { OrbitControls } from "../mods/OrbitControls.js";
+  //import * as TWEEN from "../node_modules/@tweenjs/tween.js/dist/tween.umd.js";
+  //import "";
+  import * as TWEEN from "../tweenjs/lib/tweenjs.js";
+
 
   const scene = new THREE.Scene();
 
@@ -144,7 +148,7 @@ function animateTheMoonOrbit() {
   
 }
 scene.add(earth);
-selectPlanet(earthMesh);
+
 
 //mercury
 const mercury = new THREE.Group();
@@ -178,7 +182,7 @@ function animateTheMercuryOrbit() {
 
 }
 scene.add(mercury);
-selectPlanet(mercuryMesh);
+
 
 //venus 
 const venus = new THREE.Group();
@@ -212,7 +216,7 @@ function animateTheVenusOrbit() {
 
 }
 scene.add(venus);
-selectPlanet(venusMesh);
+
 
 
 //mars
@@ -246,7 +250,7 @@ function animateMarsOrbit() {
 
 }
 scene.add(mars);
-selectPlanet(marsMesh);
+
 
 
 
@@ -278,7 +282,7 @@ function animateJupiterOrbit() {
 
 }
 scene.add(jupiter);
-selectPlanet(jMesh);
+
 
 
 //saturn
@@ -328,7 +332,7 @@ function animateTheSaturnOrbit() {
 
 }
 scene.add(saturn);
-selectPlanet(sMesh);
+
 
 //uranus
 const uranus = new THREE.Group();
@@ -375,7 +379,7 @@ function animateTheUranusOrbit() {
 
 }
 scene.add(uranus);
-selectPlanet(uMesh);
+
 
 //neptune
 const neptune = new THREE.Group();
@@ -407,7 +411,7 @@ function animateTheNeptuneOrbit() {
 
 }
 scene.add(neptune);
-selectPlanet(nMesh);
+
 
 //pluto
 const pluto = new THREE.Group();
@@ -437,7 +441,7 @@ function animateThePlutoOrbit() {
 
 }
 scene.add(pluto);
-selectPlanet(pMesh);
+
 
 
 
@@ -460,30 +464,24 @@ venusMesh.castShadow = true;
 venusMesh.receiveShadow = true;
 
 
-  function zoomInOnPlanet(planetMesh) {
-    const initialPosition = camera.position.clone();
-    const zoomPosition = planetMesh.position.clone();
-    const zoom = 0.9;
 
-    const zoomAnimation = () => {
-      const newPosition = initialPosition.clone().lerp(zoomPosition, zoom);
-      const distance = initialPosition.distanceTo(zoomPosition);
 
-      if (distance > 1) {
-          camera.position.copy(newPosition);
-          camera.lookAt(planetMesh.position);
-          requestAnimationFrame(zoomAnimation);
-      }
-    };
-      zoomAnimation();
+
+//planet selection
+function camTransition(target) {
+  new TWEEN.Tween(camera.position)
+  .to({ x: target.position.x + 100, y: target.position.y + 100, z: target.position.z + 100 }, 1000)
+  .easing(TWEEN.Easing.Quadratic.InOut)
+  .onUpdate(function () {
+    camera.lookAt(target.position);//may just be target only 
+  })
+  .onComplete(function () {
+    istransitioned = false;
   }
+  .start());
+}
 
-  function selectPlanet(planetMesh) {
-    planetMesh.addEventListener("click", () => {
-      zoomInOnPlanet(planetMesh);
-    });
-    
-  }
+
 
 
 
@@ -493,6 +491,7 @@ venusMesh.receiveShadow = true;
   const controls = new OrbitControls(camera, renderer.domElement);
   
   
+  let istransitioned = false;
   //display
   function animate() {
     requestAnimationFrame(animate);
@@ -510,10 +509,28 @@ venusMesh.receiveShadow = true;
       animateTheNeptuneOrbit();
       animateThePlutoOrbit();
 
+      if(istransitioned) {
+        TWEEN.update();
+      }
+
     }
     renderer.render(scene, camera);
   }
   
+
+  earthMesh.addEventListener("click", () => {
+    console.log("earth clicked");
+    if(!istransitioned) {
+      istransitioned = true;
+      camTransition(earthMesh);
+      //istransitioned = false;
+    }
+});
+
+
+
+
+
   animate();
   
   
