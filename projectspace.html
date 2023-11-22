@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -10,15 +9,12 @@
   
   <button id="pauseButton">Pause</button>
   <button id="startButton">Start</button>
-
-
+  <div id="pop-up" style="display: sphere; position: absolute; background-color: #ffffff; padding: 10px; border: 1px solid #cccccc; z-index: 9999;"></div>
 <script type="module">
   import * as THREE from "../mods/three.module.js";
+ // import * as TWEEN from "../mods/tween.umd.js";
   import { OrbitControls } from "../mods/OrbitControls.js";
-  //import * as TWEEN from "../node_modules/@tweenjs/tween.js/dist/tween.umd.js";
-  //import "";
-  import * as TWEEN from "../tweenjs/lib/tweenjs.js";
-
+  //import * as THREE from "../mods/Raycaster.js";
 
   const scene = new THREE.Scene();
 
@@ -463,85 +459,172 @@ clouds.receiveShadow = true;
 venusMesh.castShadow = true;
 venusMesh.receiveShadow = true;
 
+      //space for new feature
+
+    //creating stars
+    function starCreation(numberOfStars, radius) {
+
+      const starMaterial = new THREE.PointsMaterial({
+        color: 0xffffff,
+        size: 17
+      });
+      const starGeometry = new THREE.BufferGeometry();
+      const position = [];
 
 
 
+      for(let i = 0; i < numberOfStars; i++) {
 
-//planet selection
-function camTransition(target) {
-  new TWEEN.Tween(camera.position)
-  .to({ x: target.position.x + 100, y: target.position.y + 100, z: target.position.z + 100 }, 1000)
-  .easing(TWEEN.Easing.Quadratic.InOut)
-  .onUpdate(function () {
-    camera.lookAt(target.position);//may just be target only 
-  })
-  .onComplete(function () {
-    istransitioned = false;
-  }
-  .start());
-}
+        const theta = Math.random() * Math.PI * 2;
+        const phi = Math.random() * Math.PI * 2;
 
+        const x = radius * Math.sin(theta) * Math.cos(phi);
+        const y = radius * Math.sin(theta) * Math.sin(phi);
+        const z = radius * Math.cos(theta);
 
-
-
-
-
-
-  //orbit controls for interactive navigation
-  const controls = new OrbitControls(camera, renderer.domElement);
-  
-  
-  let istransitioned = false;
-  //display
-  function animate() {
-    requestAnimationFrame(animate);
-
-    if(!isPaused) {
-      
-      animateTheEarthOrbit();
-      animateTheMoonOrbit();
-      animateTheMercuryOrbit();
-      animateTheVenusOrbit();
-      animateMarsOrbit();
-      animateJupiterOrbit();
-      animateTheSaturnOrbit();  
-      animateTheUranusOrbit();
-      animateTheNeptuneOrbit();
-      animateThePlutoOrbit();
-
-      if(istransitioned) {
-        TWEEN.update();
+        position.push(x,y,z);
       }
 
+      starGeometry.setAttribute('position', new THREE.Float32BufferAttribute(position, 3));
+      const stars = new THREE.Points(starGeometry, starMaterial);
+      scene.add(stars);
+
     }
-    renderer.render(scene, camera);
+
+    
+    //space for new feature
+    
+    // new feature 
+
+    //shooting starts 
+    // function shootingStars() {
+
+    //   const starGeometry = new THREE.BufferGeometry();
+    //   const vertices = new Float32Array([-0.1, 0, 0, 0.1, 0, 0]);
+    //   starGeometry.setAttribute('position', new THREE.Float32BufferAttribute(vertices, 3));
+
+    //   const starMaterial = new THREE.LineBasicMaterial({
+    //     color: 0xffffff,
+    //     size: 30
+    //   });
+    //   const star = new THREE.Line(starGeometry, starMaterial);
+
+    //   const randomX = Math.random() * 2000 - 1000;
+    //   const randomY = Math.random() * 1000 - 500;
+    //   const randomZ = Math.random() * 2000 - 1000;
+
+    //   star.position.set(randomX, randomY, randomZ);
+    //   scene.add(star);
+
+    //   const targetX = Math.random() * 2000 - 1000;
+    //   const targetY = Math.random() * 1000 - 500;
+    //   const targetZ = Math.random() * 2000 - 1000;
+
+    //   const tween = new TWEEN.Tween(star.position).to({x: targetX, y: targetY, z: targetZ}, 2000).onComplete(() =>{scene.remove(star);}).start();
+
+    // }
+    
+    // setInterval(shootingStars, 3);
+//     const starGeometry = new THREE.BufferGeometry().setFromPoints([
+//   new THREE.Vector3(0, 0, 0),
+//   new THREE.Vector3(0, 0, -50) // Adjust this value to set the shooting star's length
+// ]);
+ 
+
+// const starMaterial = new THREE.LineBasicMaterial({ color: 0xffffff, size: 40 });
+
+// // Create the shooting star object
+// const shootingStar = new THREE.Line(starGeometry, starMaterial);
+// scene.add(shootingStar);
+
+// // Animate the shooting star
+// function animateShootingStar() {
+//   const speed = 0.5; // Adjust the speed of the shooting star
+//   shootingStar.position.x -= speed; // Change the direction of the shooting star based on your needs
+//   if (shootingStar.position.x < -100) {
+//     shootingStar.position.x = 100; // Reset the position of the shooting star when it goes beyond a certain point
+//   }
+// }
+const starsGeometry = new THREE.BufferGeometry();
+const starVertices = [];
+for (let i = 0; i < 1000; i++) {
+  const x = (Math.random() - 0.5) * 2000;
+  const y = (Math.random() - 0.5) * 2000;
+  const z = (Math.random() - 0.5) * 2000;
+  starVertices.push(x, y, z);
+}
+starsGeometry.setAttribute('position', new THREE.Float32BufferAttribute(starVertices, 3));
+const starsMaterial = new THREE.PointsMaterial({ color: 0xffffff, });
+const stars = new THREE.Points(starsGeometry, starsMaterial);
+scene.add(stars);
+
+// Create a shooting star
+const shootingStarGeometry = new THREE.BufferGeometry().setFromPoints([
+  new THREE.Vector3(0, 0, 0),
+  new THREE.Vector3(0, 0, -50) // Adjust this value to set the shooting star's length
+]);
+const shootingStarMaterial = new THREE.PointsMaterial({ color: 0xffffff, size: 20});
+const shootingStar = new THREE.Points(shootingStarGeometry, shootingStarMaterial);
+scene.add(shootingStar);
+
+// Animate the shooting star
+let starPosition = new THREE.Vector3(1000, 1000, 1000); // Start the shooting star outside the scene
+let isShootingStarVisible = false;
+
+function animateShootingStar() {
+  const speed = 5; // Adjust the speed of the shooting star
+  if (isShootingStarVisible) {
+    shootingStar.position.copy(starPosition);
+    starPosition.x -= speed;
+    if (starPosition.x < -100) {
+      isShootingStarVisible = false;
+      starPosition.set(1000, 1000, 1000); // Move the shooting star outside the scene
+    }
+  } else {
+    if (Math.random() > 0.998) { // Probability of shooting star appearing
+      isShootingStarVisible = true;
+    }
   }
+}
+
+    
+     // new feature 
+    
+    
+    //orbit controls for interactive navigation
+    const controls = new OrbitControls(camera, renderer.domElement);
+    
+    //display
+    function animate() {
+      requestAnimationFrame(animate);
+      
+      if(!isPaused) {
+        
+        animateTheEarthOrbit();
+        animateTheMoonOrbit();
+        animateTheMercuryOrbit();
+        animateTheVenusOrbit();
+        animateMarsOrbit();
+        animateJupiterOrbit();
+        animateTheSaturnOrbit();  
+        animateTheUranusOrbit();
+        animateTheNeptuneOrbit();
+        animateThePlutoOrbit();
+        animateShootingStar();
+      }
+      
+      
+      
+      renderer.render(scene, camera);
+    }
+    
+    starCreation(1000, 1500);
+    animate();
   
 
-  earthMesh.addEventListener("click", () => {
-    console.log("earth clicked");
-    if(!istransitioned) {
-      istransitioned = true;
-      camTransition(earthMesh);
-      //istransitioned = false;
-    }
-});
 
-
-
-
-
-  animate();
   
   
 </script>
 </body>
 </html>
-
-
-
-
-
-
-
-  
