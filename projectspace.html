@@ -491,60 +491,16 @@ venusMesh.receiveShadow = true;
 
     }
 
-    
+
+
+
     //space for new feature
     
-    // new feature 
 
-    //shooting starts 
-    // function shootingStars() {
 
-    //   const starGeometry = new THREE.BufferGeometry();
-    //   const vertices = new Float32Array([-0.1, 0, 0, 0.1, 0, 0]);
-    //   starGeometry.setAttribute('position', new THREE.Float32BufferAttribute(vertices, 3));
 
-    //   const starMaterial = new THREE.LineBasicMaterial({
-    //     color: 0xffffff,
-    //     size: 30
-    //   });
-    //   const star = new THREE.Line(starGeometry, starMaterial);
 
-    //   const randomX = Math.random() * 2000 - 1000;
-    //   const randomY = Math.random() * 1000 - 500;
-    //   const randomZ = Math.random() * 2000 - 1000;
-
-    //   star.position.set(randomX, randomY, randomZ);
-    //   scene.add(star);
-
-    //   const targetX = Math.random() * 2000 - 1000;
-    //   const targetY = Math.random() * 1000 - 500;
-    //   const targetZ = Math.random() * 2000 - 1000;
-
-    //   const tween = new TWEEN.Tween(star.position).to({x: targetX, y: targetY, z: targetZ}, 2000).onComplete(() =>{scene.remove(star);}).start();
-
-    // }
-    
-    // setInterval(shootingStars, 3);
-//     const starGeometry = new THREE.BufferGeometry().setFromPoints([
-//   new THREE.Vector3(0, 0, 0),
-//   new THREE.Vector3(0, 0, -50) // Adjust this value to set the shooting star's length
-// ]);
- 
-
-// const starMaterial = new THREE.LineBasicMaterial({ color: 0xffffff, size: 40 });
-
-// // Create the shooting star object
-// const shootingStar = new THREE.Line(starGeometry, starMaterial);
-// scene.add(shootingStar);
-
-// // Animate the shooting star
-// function animateShootingStar() {
-//   const speed = 0.5; // Adjust the speed of the shooting star
-//   shootingStar.position.x -= speed; // Change the direction of the shooting star based on your needs
-//   if (shootingStar.position.x < -100) {
-//     shootingStar.position.x = 100; // Reset the position of the shooting star when it goes beyond a certain point
-//   }
-// }
+    //new feature 
 const starsGeometry = new THREE.BufferGeometry();
 const starVertices = [];
 for (let i = 0; i < 1000; i++) {
@@ -561,9 +517,13 @@ scene.add(stars);
 // Create a shooting star
 const shootingStarGeometry = new THREE.BufferGeometry().setFromPoints([
   new THREE.Vector3(0, 0, 0),
-  new THREE.Vector3(0, 0, -50) // Adjust this value to set the shooting star's length
+  new THREE.Vector3(0, 0, -5) // Adjust this value to set the shooting star's length
 ]);
-const shootingStarMaterial = new THREE.PointsMaterial({ color: 0xffffff, size: 20});
+const shootingStarMaterial = new THREE.PointsMaterial({
+   color: 0xffffff,
+   size: 30,
+   opacity: 1.0
+  });
 const shootingStar = new THREE.Points(shootingStarGeometry, shootingStarMaterial);
 scene.add(shootingStar);
 
@@ -587,8 +547,7 @@ function animateShootingStar() {
   }
 }
 
-    
-     // new feature 
+// new feature 
     
     
     //orbit controls for interactive navigation
