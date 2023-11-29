@@ -9,13 +9,13 @@
   
   <button id="pauseButton">Pause</button>
   <button id="startButton">Start</button>
-  <div id="pop-up" style="display: sphere; position: absolute; background-color: #ffffff; padding: 10px; border: 1px solid #cccccc; z-index: 9999;"></div>
+  <div id="pop-up" style="display: none; position: absolute; background-color: #ffffff; padding: 10px; border: 1px solid #cccccc; z-index: 9999;"></div>
 <script type="module">
   import * as THREE from "../mods/three.module.js";
  // import * as TWEEN from "../mods/tween.umd.js";
   import { OrbitControls } from "../mods/OrbitControls.js";
   //import * as THREE from "../mods/Raycaster.js";
-
+  const planetMeshes = [];
   const scene = new THREE.Scene();
 
   const camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 4000);
@@ -64,6 +64,7 @@
   });
   
   const sunMesh = new THREE.Mesh(sunGeometry, sunMaterial);
+  sunMesh.name = 'Sun';
   scene.add(sunMesh);
 
   
@@ -88,6 +89,7 @@ const earthMaterial = new THREE.MeshPhongMaterial({
 const earthMesh = new THREE.Mesh(earthGeometry, earthMaterial);
 earthMesh.position.set(270, 0, 0);
 earthMesh.rotation.z = tilt;
+earthMesh.name = 'Earth';
 earth.add(earthMesh);
 
 
@@ -134,15 +136,16 @@ earth.add(moonMesh);
 function animateTheMoonOrbit() {
   const speed = 0.01;
   const distanceFromEarth = 40;
-
+  
   moonMesh.rotation.y += speed;
   const moonOrbitX = Math.cos(moonMesh.rotation.y) * distanceFromEarth;
   const moonOrbitZ = Math.sin(moonMesh.rotation.y) * distanceFromEarth;
-
+  
   moonMesh.position.x = earthMesh.position.x + moonOrbitX;
   moonMesh.position.z = earthMesh.position.z + moonOrbitZ;
   
 }
+moonMesh.name = 'Moon';
 scene.add(earth);
 
 
@@ -175,8 +178,9 @@ function animateTheMercuryOrbit() {
   
   mercuryMesh.position.x =  mercuryOrbitX;
   mercuryMesh.position.z =  mercuryOrbitZ;
-
+  
 }
+mercuryMesh.name = 'Mercury';
 scene.add(mercury);
 
 
@@ -211,6 +215,7 @@ function animateTheVenusOrbit() {
   venusMesh.position.z =  venusOrbitZ;
 
 }
+venusMesh.name = 'Venus';
 scene.add(venus);
 
 
@@ -245,6 +250,7 @@ function animateMarsOrbit() {
   marsMesh.position.z =  marsOrbitZ;
 
 }
+marsMesh.name = 'Mars';
 scene.add(mars);
 
 
@@ -277,6 +283,7 @@ function animateJupiterOrbit() {
   jMesh.position.z =  jupiterOrbitZ;
 
 }
+jMesh.name = 'Jupiter';
 scene.add(jupiter);
 
 
@@ -327,6 +334,7 @@ function animateTheSaturnOrbit() {
   sMesh.position.z =  saturnOrbitZ;
 
 }
+sMesh.name = 'Saturn';
 scene.add(saturn);
 
 
@@ -374,6 +382,7 @@ function animateTheUranusOrbit() {
   uMesh.position.z =  uranusOrbitZ;
 
 }
+uMesh.name = 'Uranus';
 scene.add(uranus);
 
 
@@ -406,6 +415,7 @@ function animateTheNeptuneOrbit() {
   nMesh.position.z =  neptuneOrbitZ;
 
 }
+nMesh.name = 'Neptune';
 scene.add(neptune);
 
 
@@ -436,6 +446,7 @@ function animateThePlutoOrbit() {
   pMesh.position.z =  plutoOrbitZ;
 
 }
+pMesh.name = 'Pluto';
 scene.add(pluto);
 
 
@@ -548,6 +559,54 @@ function animateShootingStar() {
 }
 
 // new feature 
+
+// new change
+//pop up window
+planetMeshes.push(sunMesh);
+planetMeshes.push(earthMesh);
+planetMeshes.push(moonMesh);
+planetMeshes.push(mercuryMesh);
+planetMeshes.push(venusMesh);
+planetMeshes.push(marsMesh);
+planetMeshes.push(jMesh);
+planetMeshes.push(sMesh);
+planetMeshes.push(uMesh);
+planetMeshes.push(nMesh);
+planetMeshes.push(pMesh);
+
+
+const domelement = renderer.domElement;
+//renderer.domElement(addEventListener('click', onclick, false));
+domelement.addEventListener('click', onClick, false);
+function onClick(event) {
+  event.preventDefault();
+
+  const mouse = new THREE.Vector2();
+  mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
+  mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
+
+  const raycaster = new THREE.Raycaster();
+  raycaster.setFromCamera(mouse, camera);
+
+  const intersects = raycaster.intersectObjects(planetMeshes, true);
+
+  if(intersects.length > 0) {
+    const clickedPlanets = intersects[0].object;
+    console.log('clicked planet:', clickedPlanets.name);
+
+    const popup = document.getElementById('pop-up');
+    popup.style.display = 'block';
+    popup.innerHTML = `clicked planet: ${clickedPlanets.name}`;
+  }
+}
+
+
+
+
+
+
+
+
     //this is a new change
     
     //orbit controls for interactive navigation
@@ -573,7 +632,7 @@ function animateShootingStar() {
       }
       
       
-      
+      //camera.lookAt(scene.position);
       renderer.render(scene, camera);
     }
     
