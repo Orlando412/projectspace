@@ -9,6 +9,8 @@
   
   <button id="pauseButton">Pause</button>
   <button id="startButton">Start</button>
+  <button id="fastForwardButton">Fast Forward</button>
+  <button id="rewindButton">Rewind</button>
   <div id="pop-up" style="display: none; position: absolute; background-color: #ffffff; padding: 10px; border: 1px solid #cccccc; z-index: 9999;"></div>
 <script type="module">
   import * as THREE from "../mods/three.module.js";
@@ -32,15 +34,35 @@
   scene.add(plights);
 
   //pause and start button
+  //fast forward and rewind button 
   let isPaused = false;
+  let isFastForward = false;
+  let isRewinding = false;
   const pauseButton = document.getElementById("pauseButton");
   const startButton = document.getElementById("startButton");
+  const fastForwardButton = document.getElementById("fastForwardButton");
+  const rewindButton = document.getElementById("rewindButton");
+
   pauseButton.addEventListener("click", () => {
     isPaused = true;
+    isFastForward = false;
+    isRewinding = false;
   });
   startButton.addEventListener("click", () => {
     isPaused = false;
+    isFastForward = false;
+    isRewinding = false;
     animate();
+  });
+  fastForwardButton.addEventListener("click", () => {
+    isPaused = false;
+    isFastForward = true;
+    isRewinding = false;
+  });
+  rewindButton.addEventListener("click", () => {
+    isPaused = false;
+    isFastForward = false;
+    isRewinding = true;
   });
 
   //lets build this solar system
@@ -576,7 +598,6 @@ planetMeshes.push(pMesh);
 
 
 const domelement = renderer.domElement;
-//renderer.domElement(addEventListener('click', onclick, false));
 domelement.addEventListener('click', onClick, false);
 function onClick(event) {
   event.preventDefault();
@@ -588,6 +609,7 @@ function onClick(event) {
   const raycaster = new THREE.Raycaster();
   raycaster.setFromCamera(mouse, camera);
 
+  
   const intersects = raycaster.intersectObjects(planetMeshes, true);
 
   if(intersects.length > 0) {
@@ -600,6 +622,97 @@ function onClick(event) {
   }
 }
 
+//reverse speed for rewind
+function animateTheVenusOrbitReverse() {
+  const speed = -0.007; 
+  const distanceFromSun = 190;
+
+  venus.rotation.y += speed;
+  const venusOrbitX = Math.cos(venusMesh.rotation.y) * distanceFromSun;
+  const venusOrbitZ = Math.sin(venusMesh.rotation.y) * distanceFromSun;
+
+  venusMesh.position.x = venusOrbitX;
+  venusMesh.position.z = venusOrbitZ;
+}
+
+function animateTheEarthOrbitReverse() {
+  const speed = -0.005; 
+  earth.rotation.y += speed;
+}
+
+function animateTheMercuryOrbitReverse() {
+  const speed = -0.01; 
+  const distanceFromSun = 130;
+
+  mercury.rotation.y += speed;
+  const mercuryOrbitX = Math.cos(mercuryMesh.rotation.y) * distanceFromSun;
+  const mercuryOrbitZ = Math.sin(mercuryMesh.rotation.y) * distanceFromSun;
+
+  mercuryMesh.position.x = mercuryOrbitX;
+  mercuryMesh.position.z = mercuryOrbitZ;
+}
+
+function animateTheEarthOrbitForward() {
+  const speed = 0.010;
+  earth.rotation.y += speed;
+}
+
+const planetsMeshs = [earthMesh, moonMesh, mercuryMesh, venusMesh, marsMesh, jMesh, sMesh, uMesh, nMesh, pMesh];
+//for reverse
+const orbitFunctions = [
+          animateTheEarthOrbitReverse,
+          animateTheMoonOrbit,
+          animateTheMercuryOrbitReverse,
+          animateTheVenusOrbitReverse,
+          animateMarsOrbit,
+          animateJupiterOrbit,
+          animateTheSaturnOrbit,  
+          animateTheUranusOrbit,
+          animateTheNeptuneOrbit,
+          animateThePlutoOrbit,
+];          
+
+//for fast forward
+const orbitsFunctions = [
+          animateTheEarthOrbitForward,
+          animateTheMoonOrbit,
+          animateTheMercuryOrbit,
+          animateTheVenusOrbit,
+          animateMarsOrbit,
+          animateJupiterOrbit,
+          animateTheSaturnOrbit,  
+          animateTheUranusOrbit,
+          animateTheNeptuneOrbit,
+          animateThePlutoOrbit,
+];          
+
+
+//function for reverse animations
+function reverseAnimationFrame() {
+  for(let i = 0; i < planetsMeshs.length; i++) {
+   
+   orbitFunctions[i]();
+   //earth.rotation.y += 0.008;
+   planetsMeshs[i].rotation.y += 0.005;
+  }
+}
+ 
+
+function fastForwardAnimationFrame() {
+  
+  for(let i = 0; i < planetsMeshs.length; i++) {
+   
+   orbitsFunctions[i]();
+   planetsMeshs[i].rotation.y -= 0.007;
+  
+  }
+}
+
+
+
+
+//another change 
+//new feature
 
 
 
@@ -607,6 +720,8 @@ function onClick(event) {
 
 
 
+// new feature
+//another change 
     //this is a new change
     
     //orbit controls for interactive navigation
@@ -617,22 +732,33 @@ function onClick(event) {
       requestAnimationFrame(animate);
       
       if(!isPaused) {
+
+        if(isRewinding) {
+            reverseAnimationFrame();
+        }
+        else if(isFastForward) {
+            fastForwardAnimationFrame();
+        }
+        else {
+
+          animateTheEarthOrbit();
+          animateTheMoonOrbit();
+          animateTheMercuryOrbit();
+          animateTheVenusOrbit();
+          animateMarsOrbit();
+          animateJupiterOrbit();
+          animateTheSaturnOrbit();  
+          animateTheUranusOrbit();
+          animateTheNeptuneOrbit();
+          animateThePlutoOrbit();
+          animateShootingStar();
+
+        }
         
-        animateTheEarthOrbit();
-        animateTheMoonOrbit();
-        animateTheMercuryOrbit();
-        animateTheVenusOrbit();
-        animateMarsOrbit();
-        animateJupiterOrbit();
-        animateTheSaturnOrbit();  
-        animateTheUranusOrbit();
-        animateTheNeptuneOrbit();
-        animateThePlutoOrbit();
-        animateShootingStar();
       }
       
       
-      //camera.lookAt(scene.position);
+      
       renderer.render(scene, camera);
     }
     
