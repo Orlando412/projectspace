@@ -719,7 +719,16 @@ function fastForwardAnimationFrame() {
 
 function focusOnPlanets(planet) {
   const {x, y, z} = planet.position;
+  let distance = 50;
+  let fov = 45;
+  if(planet.name === 'Saturn' || planet.name === 'Jupiter') {
+    distance = 150;
+    fov = 60;
+  }
+  camera.position.set(x + distance, y + distance, z + distance);
   camera.lookAt(x, y, z);
+  camera.fov = fov;
+  camera.updateProjectionMatrix();
 }
 
 function findPlanetByName(name) {
