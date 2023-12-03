@@ -710,7 +710,50 @@ function fastForwardAnimationFrame() {
   }
 }
 
+//new feature 
+//meteor shower creation and animation 
+const meteorGeometry = new THREE.BufferGeometry();
+const meteorVertices = [];
 
+for (let i = 0; i < 10; i++) {
+  const x = Math.random() * 2000 - 1000; 
+  const y = Math.random() * 2000 - 1000; 
+  const z = Math.random() * 2000 - 1000; 
+
+  meteorVertices.push(x, y, z);
+}
+
+meteorGeometry.setAttribute('position', new THREE.Float32BufferAttribute(meteorVertices, 3));
+
+const meteorMaterial = new THREE.PointsMaterial({
+  color: 0xffffff,
+  size: 5,
+  transparent: true,
+  opacity: 0.8,
+});
+
+const meteors = new THREE.Points(meteorGeometry, meteorMaterial);
+scene.add(meteors);
+
+function animateMeteors() {
+  const positions = meteors.geometry.attributes.position.array;
+  for (let i = 0; i < positions.length; i += 3) {
+  
+    positions[i] -= 1; 
+    positions[i + 1] -= 1; 
+    positions[i + 2] -= 1; 
+
+    if (positions[i] < -1000 || positions[i + 1] < -1000 || positions[i + 2] < -1000) {
+      positions[i] = Math.random() * 2000 - 1000;
+      positions[i + 1] = Math.random() * 2000 - 1000;
+      positions[i + 2] = Math.random() * 2000 - 1000;
+    }
+  }
+
+  meteors.geometry.attributes.position.needsUpdate = true;
+}
+
+//new feature
 
 
 //another change 
@@ -725,6 +768,9 @@ function focusOnPlanets(planet) {
     distance = 150;
     fov = 60;
   }
+
+ 
+
   camera.position.set(x + distance, y + distance, z + distance);
   camera.lookAt(x, y, z);
   camera.fov = fov;
@@ -788,7 +834,7 @@ searchButton.addEventListener('click', () => {
           animateTheNeptuneOrbit();
           animateThePlutoOrbit();
           animateShootingStar();
-
+          animateMeteors(); 
         }
         
       }
