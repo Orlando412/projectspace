@@ -3,7 +3,8 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Document</title>
+  <link rel="stylesheet" href="./projectspace.css">
+  <title>Project Space</title>
 </head>
 <body>
   
@@ -20,6 +21,7 @@
   import { OrbitControls } from "../mods/OrbitControls.js";
   //import * as THREE from "../mods/Raycaster.js";
   const planetMeshes = [];
+  const distances = [];
   const scene = new THREE.Scene();
 
   const camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 4000);
@@ -40,6 +42,7 @@
   let isPaused = false;
   let isFastForward = false;
   let isRewinding = false;
+  let selectPlanet = null;
   const pauseButton = document.getElementById("pauseButton");
   const startButton = document.getElementById("startButton");
   const fastForwardButton = document.getElementById("fastForwardButton");
@@ -599,6 +602,9 @@ planetMeshes.push(nMesh);
 planetMeshes.push(pMesh);
 
 
+
+
+
 const domelement = renderer.domElement;
 domelement.addEventListener('click', onClick, false);
 function onClick(event) {
@@ -617,13 +623,28 @@ function onClick(event) {
   if(intersects.length > 0) {
     const clickedPlanets = intersects[0].object;
     console.log('clicked planet:', clickedPlanets.name);
-
+    
     const popup = document.getElementById('pop-up');
     popup.style.display = 'block';
     popup.innerHTML = `clicked planet: ${clickedPlanets.name}`;
-  }
-}
+    
+     let popupContent = `Clicked planet: ${clickedPlanet.name}<br><br>`;
+    popupContent += 'Distances from other planets:<br>';
+    
+     planetMeshes.forEach((planet) => {
+        if (planet !== clickedPlanet) {
+          const distance = clickedPlanet.position.distanceTo(planet.position);
+          popupContent += `${planet.name}: ${distance.toFixed(2)} units<br>`;
+      }
+    });
 
+    popup.innerHTML = popupContent;
+  }
+  
+ 
+
+}
+//////////////////////////////////////////////////////////////////////////////fixing popup lines 607-641/////////////////////
 //reverse speed for rewind
 function animateTheVenusOrbitReverse() {
   const speed = -0.007; 
@@ -756,6 +777,18 @@ function animateMeteors() {
 //new feature
 
 
+
+
+
+
+
+
+
+
+
+
+
+
 //another change 
 //new feature
 //search for planet by description 
@@ -808,7 +841,13 @@ searchButton.addEventListener('click', () => {
     
     //orbit controls for interactive navigation
     const controls = new OrbitControls(camera, renderer.domElement);
-    
+   
+
+  
+  
+
+
+
     //display
     function animate() {
       requestAnimationFrame(animate);
